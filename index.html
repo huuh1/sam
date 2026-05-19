@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Tamu Digital</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f6fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #1abc9c;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+            letter-spacing: 1px;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        form {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        form h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+        button {
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #16a085;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #1abc9c;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f1f2f6;
+        }
+        .action-btn {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+        .edit-btn {
+            background-color: #2980b9;
+        }
+        .edit-btn:hover {
+            background-color: #2471a3;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Buku Tamu Digital</h1>
+</header>
+
+<main>
+    <form id="guestForm">
+        <h2>Isi Buku Tamu</h2>
+        <input type="text" id="name" placeholder="Nama" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <textarea id="message" placeholder="Pesan Anda" rows="4" required></textarea>
+        <button type="submit" id="submitBtn">Tambah Tamu</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Pesan</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="guestList">
+            <!-- Daftar tamu akan muncul di sini -->
+        </tbody>
+    </table>
+</main>
+
+<script>
+    const guestForm = document.getElementById('guestForm');
+    const guestList = document.getElementById('guestList');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Ambil data tamu dari localStorage
+    let guests = JSON.parse(localStorage.getItem('guests')) || [];
+    let editIndex = -1;
+
+    function renderGuests() {
+        guestList.innerHTML = '';
+        guests.forEach((guest, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${guest.name}</td>
+                <td>${guest.email}</td>
+                <td>${guest.message}</td>
+                <td>
+                    <button class="action-btn edit-btn" onclick="editGuest(${index})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn delete-btn" onclick="deleteGuest(${index})">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                </td>
+            `;
+            guestList.appendChild(row);
+        });
+    }
+
+    function deleteGuest(index) {
+        if(confirm('Apakah Anda yakin ingin menghapus tamu ini?')) {
+            guests.splice(index, 1);
+            localStorage.setItem('guests', JSON.stringify(guests));
+            renderGuests();
+            resetForm();
+        }
+    }
+
+    function editGuest(index) {
+        const guest = guests[index];
+        document.getElementById('name').value = guest.name;
+        document.getElementById('email').value = guest.email;
+        document.getElementById('message').value = guest.message;
+        submitBtn.textContent = 'Simpan Perubahan';
+        editIndex = index;
+    }
+
+    function resetForm() {
+        guestForm.reset();
+        submitBtn.textContent = 'Tambah Tamu';
+        editIndex = -1;
+    }
+
+    guestForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const message = document.getElementById('message').value.trim();
+
+        if(editIndex === -1) {
+            guests.push({ name, email, message });
+        } else {
+            guests[editIndex] = { name, email, message };
+        }
+
+        localStorage.setItem('guests', JSON.stringify(guests));
+        renderGuests();
+        resetForm();
+    });
+
+    renderGuests();
+</script>
+
+</body>
+</html>
